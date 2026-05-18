@@ -6,23 +6,16 @@
     <title>몰리 공공제안 에이전트</title>
     <link rel="icon" href="/logo.ico">
     <link rel="stylesheet" href="/styles.css">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   </head>
   <body>
-    <div id="app" class="app-shell" aria-live="polite">
-      <main class="phone-frame">
-        <section class="screen page-padding">
-          <div class="brand-row">
-            <img src="/logo.ico" alt="" class="brand-icon">
-            <div>
-              <p class="eyebrow">MOLI</p>
-              <h1>몰리 공공제안 에이전트</h1>
-            </div>
-          </div>
-          <button class="btn primary block" type="button">새 분석 시작</button>
-          <p class="sr-only">공수 산정, 레포트 생성, 공유 설정, 관리자 설정</p>
-        </section>
-      </main>
-    </div>
-    <script type="module" src="/main.js"></script>
+    <div id="root"></div>
+    <script type="text/babel" data-type="module" src="/data.js"></script>
+    <script type="text/babel" data-type="module" src="/components.js"></script>
+    <script type="text/babel" data-type="module" src="/screens-1.js"></script>
+    <script type="text/babel" data-type="module" src="/screens-2.js"></script>
+    <script type="text/babel" data-type="module" src="/app.js"></script>
   </body>
 </html>

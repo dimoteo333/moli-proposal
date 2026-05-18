@@ -6,3 +6,4 @@ harness/reports/*
 !harness/reports/sample-public-si-rfp.report.md
 !harness/reports/sample-public-si-rfp.email.txt
 .env
+.env.local

@@ -1,5 +1,6 @@
-// Mock data for MOLI Public Proposal Agent prototype.
-// Note: realistic-feeling Korean public-sector RFP analysis sample.
+// Data adapter: bridges design-prototype mock data with real API responses
+// During development/prototype, uses embedded sample data.
+// In production, data comes from /api/* endpoints.
 
 window.MOLI_DATA = (() => {
   const project = {
@@ -95,7 +96,6 @@ window.MOLI_DATA = (() => {
     }
   };
 
-  // Roles & colors
   const ROLES = [
     { key: "pm", label: "PM", color: "#0046ff" },
     { key: "architect", label: "Architect", color: "#7a5af8" },
@@ -107,7 +107,6 @@ window.MOLI_DATA = (() => {
     { key: "qa", label: "QA", color: "#98a2b3" }
   ];
 
-  // Each requirement has: included flags per package (S, M, L)
   const requirements = [
     {
       id: "r1",
@@ -305,7 +304,6 @@ window.MOLI_DATA = (() => {
     { id: "s6", label: "공수 산정 준비", detail: "KOSA · ISBSG 가정 매핑" }
   ];
 
-  // Recent analyses
   const recents = [
     {
       id: "a1",
@@ -388,3 +386,56 @@ Medium 패키지에 포함된 차별화 항목:
 
   return { project, requirements, packages, stages, recents, report, emailDraft, evidence, ROLES };
 })();
+
+// API helper — connects to real backend
+window.MOLI_API = {
+  async runAnalysis(sourceUrl, analysisMode) {
+    const post = async (path, body) => {
+      const res = await fetch(path, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return res.json();
+    };
+    const created = await post("/api/analysis", {
+      sourceUrl: sourceUrl || "https://www.g2b.go.kr/sample-notice",
+      analysisMode: analysisMode || "standard",
+      projectCategory: "공공 SI"
+    });
+    await post(`/api/analysis/${created.analysisId}/files`, { fixture: "sample-public-si-rfp.md" });
+    await post(`/api/analysis/${created.analysisId}/parse`, {});
+    await post(`/api/analysis/${created.analysisId}/extract`, {});
+    const estimated = await post(`/api/analysis/${created.analysisId}/estimate`, {});
+    await post(`/api/analysis/${created.analysisId}/report`, {});
+    const analysis = await (await fetch(`/api/analysis/${created.analysisId}`)).json();
+    return { analysis, estimated };
+  },
+
+  async getAnalysis(id) {
+    const res = await fetch(`/api/analysis/${id}`);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  async toggleRequirement(analysisId, requirementId, included) {
+    const res = await fetch(`/api/analysis/${analysisId}/requirements/${requirementId}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ included })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  async createShare(analysisId, permission, expiresInDays) {
+    const res = await fetch(`/api/analysis/${analysisId}/share`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ permission, expiresInDays })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  }
+};

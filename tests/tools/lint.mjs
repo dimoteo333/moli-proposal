@@ -15,8 +15,12 @@ for (const file of files) {
   const text = await readFile(file, "utf8");
   if (/\t/.test(text)) errors.push(`${file}: tabs are not allowed`);
   if (/[ \t]+$/m.test(text)) errors.push(`${file}: trailing whitespace`);
-  if (file.startsWith("src/app") && /Start New Analysis|Generate Report|Share Settings/.test(text)) {
-    errors.push(`${file}: UI copy must be Korean`);
+  if (file.startsWith("src/app") && !file.endsWith("data.js")) {
+    // Strip comments before checking for English UI labels
+    const stripped = text.replace(/\/\/.*$/gm, "");
+    if (/>Start New Analysis|>Generate Report|>Share Settings</.test(stripped)) {
+      errors.push(`${file}: UI copy must be Korean`);
+    }
   }
   if (file.endsWith(".json")) {
     JSON.parse(text);

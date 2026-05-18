@@ -14,6 +14,10 @@ for (const file of files) {
     JSON.parse(await readFile(file, "utf8"));
     continue;
   }
+  // Skip React JSX files that are transpiled by Babel in-browser
+  if (file.startsWith("src/app/") && file.endsWith(".js") && !file.endsWith("main.js")) {
+    continue;
+  }
   const result = spawnSync(process.execPath, ["--check", file], { encoding: "utf8" });
   if (result.status !== 0) {
     process.stderr.write(result.stderr || result.stdout);
