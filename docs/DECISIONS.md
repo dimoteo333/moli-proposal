@@ -53,3 +53,21 @@ MVP는 Markdown/TXT fixture 파서로 전체 제품 흐름을 검증하고, 실�
 ## Consequences
 
 제품 흐름과 계약은 검증되지만 실제 파일 포맷 지원은 제한 사항으로 남습니다.
+
+### ADR-0004: E2E 하네스는 Node runner로 실행
+
+Date: 2026-05-18
+
+Status: Accepted
+
+## Context
+
+요청 구조에는 `playwright.config.ts`가 포함되지만 현재 환경은 외부 패키지 설치와 로컬 소켓 바인딩이 제한됩니다.
+
+## Decision
+
+`playwright.config.ts`는 향후 Playwright 전환을 위한 설정 파일로 두고, 현재 `npm run test:e2e`는 Node 내장 test runner와 서버의 in-process fetch fallback으로 핵심 흐름을 검증합니다.
+
+## Consequences
+
+브라우저 엔진 수준의 시각 회귀 검증은 후속 작업입니다. 현재 하네스는 HTML/CSS/API 계약과 모바일 copy/accessibility 조건을 결정적으로 검증합니다.
