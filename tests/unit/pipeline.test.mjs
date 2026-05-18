@@ -13,10 +13,13 @@ const loadText = (path) => readFile(new URL(`../../${path}`, import.meta.url), "
 const loadJson = async (path) => JSON.parse(await loadText(path));
 
 test("parser routes markdown fixtures, produces text blocks, and isolates corrupt files", async () => {
-  assert.deepEqual(parserSupportedExtensions().sort(), [".md", ".txt"]);
+  const exts = parserSupportedExtensions();
+  assert.ok(exts.includes(".md"));
+  assert.ok(exts.includes(".txt"));
+  assert.ok(exts.includes(".hwp"));
 
   const content = await loadText("harness/fixtures/rfp/sample-public-si-rfp.md");
-  const parsed = parseFile({
+  const parsed = await parseFile({
     fileId: "file_public_si",
     fileName: "sample-public-si-rfp.md",
     content
@@ -29,7 +32,7 @@ test("parser routes markdown fixtures, produces text blocks, and isolates corrup
   assert.equal(parsed.warnings.length, 0);
 
   const corrupt = await loadText("harness/fixtures/rfp/sample-corrupt-file.txt");
-  const failed = parseFile({
+  const failed = await parseFile({
     fileId: "file_corrupt",
     fileName: "sample-corrupt-file.txt",
     content: corrupt
@@ -42,7 +45,7 @@ test("parser routes markdown fixtures, produces text blocks, and isolates corrup
 test("extraction keeps project metadata, classifications, and evidence references", async () => {
   const expected = await loadJson("harness/expected/sample-public-si-rfp.expected.json");
   const content = await loadText("harness/fixtures/rfp/sample-public-si-rfp.md");
-  const parsed = parseFile({ fileId: "file_public_si", fileName: expected.fixture, content });
+  const parsed = await parseFile({ fileId: "file_public_si", fileName: expected.fixture, content });
   const analysis = extractAnalysisModel(parsed);
 
   assert.equal(analysis.project.title, expected.project.title);
@@ -64,7 +67,7 @@ test("estimation exposes assumptions and preserves original values on override",
   const content = await loadText("harness/fixtures/rfp/sample-public-si-rfp.md");
   const procurementNotice = await loadJson("harness/fixtures/procurement/sample-procurement-notice.json");
   const historicalProjects = await loadJson("harness/fixtures/historical/sample-internal-projects.json");
-  const parsed = parseFile({ fileId: "file_public_si", fileName: "sample-public-si-rfp.md", content });
+  const parsed = await parseFile({ fileId: "file_public_si", fileName: "sample-public-si-rfp.md", content });
   const analysis = extractAnalysisModel(parsed);
   const estimated = estimateAnalysis(analysis, { procurementNotice, historicalProjects });
 
@@ -93,7 +96,7 @@ test("estimation exposes assumptions and preserves original values on override",
 test("package builder recommends the expected preset and recalculates totals", async () => {
   const expected = await loadJson("harness/expected/sample-public-si-rfp.expected.json");
   const content = await loadText("harness/fixtures/rfp/sample-public-si-rfp.md");
-  const parsed = parseFile({ fileId: "file_public_si", fileName: expected.fixture, content });
+  const parsed = await parseFile({ fileId: "file_public_si", fileName: expected.fixture, content });
   const analysis = estimateAnalysis(extractAnalysisModel(parsed));
   const packaged = buildPackages(analysis);
 
@@ -105,7 +108,7 @@ test("package builder recommends the expected preset and recalculates totals", a
 
 test("report generator returns a Korean report and Korean email draft", async () => {
   const content = await loadText("harness/fixtures/rfp/sample-public-si-rfp.md");
-  const parsed = parseFile({ fileId: "file_public_si", fileName: "sample-public-si-rfp.md", content });
+  const parsed = await parseFile({ fileId: "file_public_si", fileName: "sample-public-si-rfp.md", content });
   const analysis = buildPackages(estimateAnalysis(extractAnalysisModel(parsed)));
   const report = generateKoreanReport(analysis);
 
@@ -120,7 +123,7 @@ test("report generator returns a Korean report and Korean email draft", async ()
 
 test("sharing creates derived recalculations without mutating the original analysis", async () => {
   const content = await loadText("harness/fixtures/rfp/sample-public-si-rfp.md");
-  const parsed = parseFile({ fileId: "file_public_si", fileName: "sample-public-si-rfp.md", content });
+  const parsed = await parseFile({ fileId: "file_public_si", fileName: "sample-public-si-rfp.md", content });
   const analysis = buildPackages(estimateAnalysis(extractAnalysisModel(parsed)));
   const report = generateKoreanReport(analysis);
   const original = { ...analysis, report };

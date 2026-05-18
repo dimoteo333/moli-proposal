@@ -20,6 +20,7 @@
   "engines": {
     "node": ">=25"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "kordoc": "^2.8.0"
+  }
 }

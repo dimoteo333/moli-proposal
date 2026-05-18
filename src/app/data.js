@@ -413,6 +413,46 @@ window.MOLI_API = {
     return { analysis, estimated };
   },
 
+  // 실제 파일 업로드 분석
+  async uploadAndAnalyze(file, { sourceUrl, analysisMode, projectCategory } = {}) {
+    const post = async (path, body) => {
+      const res = await fetch(path, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return res.json();
+    };
+
+    // 1. 분석 생성
+    const created = await post("/api/analysis", {
+      sourceUrl: sourceUrl || '',
+      analysisMode: analysisMode || 'standard',
+      projectCategory: projectCategory || '공공 SI'
+    });
+
+    // 2. 파일 업로드 (multipart)
+    const formData = new FormData();
+    formData.append('file', file);
+    if (sourceUrl) formData.append('sourceUrl', sourceUrl);
+    const uploadRes = await fetch(`/api/analysis/${created.analysisId}/upload`, {
+      method: 'POST',
+      body: formData
+    });
+    if (!uploadRes.ok) throw new Error(await uploadRes.text());
+
+    // 3. 파싱 → 추출 → 산정 → 보고서
+    await post(`/api/analysis/${created.analysisId}/parse`, {});
+    await post(`/api/analysis/${created.analysisId}/extract`, {});
+    const estimated = await post(`/api/analysis/${created.analysisId}/estimate`, {});
+    await post(`/api/analysis/${created.analysisId}/report`, {});
+
+    // 4. 전체 결과 조회
+    const analysis = await (await fetch(`/api/analysis/${created.analysisId}`)).json();
+    return { analysis, estimated };
+  },
+
   async getAnalysis(id) {
     const res = await fetch(`/api/analysis/${id}`);
     if (!res.ok) throw new Error(await res.text());

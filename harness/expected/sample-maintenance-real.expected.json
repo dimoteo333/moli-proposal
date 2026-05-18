@@ -1,0 +1,16 @@
+{
+  "fixture": "sample-maintenance-real.hwp",
+  "project": {
+    "title": "2026년 창업지원 시스템 통합 유지보수 용역",
+    "agency": "창업진흥원",
+    "budgetKRW": 9571860000,
+    "contractPeriodMonths": 24,
+    "bidMethod": "협상에 의한 계약",
+    "proposalDeadline": "2026",
+    "businessDomain": "유지관리",
+    "projectType": "통합 유지보수"
+  },
+  "minimumRequirementCount": 10,
+  "requiredTypes": ["functional", "non_functional", "security", "infrastructure", "documentation"],
+  "recommendedPackage": "L"
+}

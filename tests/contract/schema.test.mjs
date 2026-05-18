@@ -13,7 +13,7 @@ const loadText = (path) => readFile(new URL(`../../${path}`, import.meta.url), "
 
 test("analysis contract accepts the deterministic fixture pipeline", async () => {
   const content = await loadText("harness/fixtures/rfp/sample-public-si-rfp.md");
-  const parsed = parseFile({ fileId: "file_public_si", fileName: "sample-public-si-rfp.md", content });
+  const parsed = await parseFile({ fileId: "file_public_si", fileName: "sample-public-si-rfp.md", content });
   const analysis = buildPackages(estimateAnalysis(extractAnalysisModel(parsed)));
   const result = validateAnalysis(analysis);
 
@@ -47,7 +47,7 @@ test("analysis contract rejects fabricated requirements without evidence or revi
 
 test("report contract requires Korean report sections and Korean email draft", async () => {
   const content = await loadText("harness/fixtures/rfp/sample-public-si-rfp.md");
-  const parsed = parseFile({ fileId: "file_public_si", fileName: "sample-public-si-rfp.md", content });
+  const parsed = await parseFile({ fileId: "file_public_si", fileName: "sample-public-si-rfp.md", content });
   const analysis = buildPackages(estimateAnalysis(extractAnalysisModel(parsed)));
   const report = generateKoreanReport(analysis);
 

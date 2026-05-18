@@ -92,30 +92,88 @@ export async function dispatchApi(method, path, body, store) {
     return { analysisId: id, status: "draft" };
   }
 
+  // POST /api/analysis/:id/upload — multipart 파일 업로드
+  const uploadMatch = path.match(/^\/api\/analysis\/([^/]+)\/upload$/);
+  if (method === "POST" && uploadMatch && body._multipart) {
+    const analysis = requireAnalysis(store, uploadMatch[1]);
+    const { parseMultipart } = await import("../lib/multipart.mjs");
+    const { validateUpload } = await import("../lib/uploadValidation.mjs");
+    const { files, fields } = await parseMultipart(body._request);
+
+    if (files.length === 0) throw badRequest("No file uploaded");
+
+    const file = files[0];
+    const ext = extname(file.filename).toLowerCase();
+
+    const validation = validateUpload({ filename: file.filename, size: file.size, mimeType: file.mimeType });
+    if (!validation.valid) throw badRequest(validation.errors.join(' '));
+
+    // 필드에서 sourceUrl 등 추가 정보 반영
+    if (fields.sourceUrl) analysis.sourceUrl = fields.sourceUrl;
+
+    analysis.files = [{
+      id: stableId("file", file.filename),
+      name: file.filename,
+      mimeType: file.mimeType,
+      size: file.size,
+      buffer: file.buffer,
+      status: "uploaded"
+    }];
+    analysis.status = "uploaded";
+
+    return {
+      analysisId: analysis.id,
+      files: analysis.files.map(f => ({
+        id: f.id,
+        name: f.name,
+        size: f.size,
+        status: f.status
+      }))
+    };
+  }
+
   const fileMatch = path.match(/^\/api\/analysis\/([^/]+)\/files$/);
   if (method === "POST" && fileMatch) {
     const analysis = requireAnalysis(store, fileMatch[1]);
     const fixture = body.fixture || "sample-public-si-rfp.md";
-    const content = await readFile(join(fixtureDir, fixture), "utf8");
-    analysis.files = [{
-      id: stableId("file", fixture),
-      name: fixture,
-      fixture,
-      content,
-      status: "uploaded"
-    }];
+    const fixturePath = join(fixtureDir, fixture);
+    const ext = extname(fixture).toLowerCase();
+
+    if (['.hwp', '.hwpx', '.docx', '.pdf', '.xlsx'].includes(ext)) {
+      // 바이너리 fixture
+      const buffer = await readFile(fixturePath);
+      analysis.files = [{
+        id: stableId("file", fixture),
+        name: fixture,
+        fixture,
+        buffer,
+        size: buffer.length,
+        status: "uploaded"
+      }];
+    } else {
+      // 텍스트 fixture (기존 로직)
+      const content = await readFile(fixturePath, "utf8");
+      analysis.files = [{
+        id: stableId("file", fixture),
+        name: fixture,
+        fixture,
+        content,
+        status: "uploaded"
+      }];
+    }
     analysis.status = "uploaded";
-    return { analysisId: analysis.id, files: analysis.files.map(({ content: _content, ...file }) => file) };
+    return { analysisId: analysis.id, files: analysis.files.map(({ content: _c, buffer: _b, ...file }) => file) };
   }
 
   const parseMatch = path.match(/^\/api\/analysis\/([^/]+)\/parse$/);
   if (method === "POST" && parseMatch) {
     const analysis = requireAnalysis(store, parseMatch[1]);
-    const parsedFiles = analysis.files.map((file) => parseFile({
+    const parsedFiles = await Promise.all(analysis.files.map((file) => parseFile({
       fileId: file.id,
       fileName: file.name,
-      content: file.content
-    }));
+      content: file.content,
+      buffer: file.buffer
+    })));
     analysis.parsedFiles = parsedFiles;
     analysis.status = parsedFiles.some((file) => file.status === "parsed") ? "parsed" : "parse_failed";
     return { analysisId: analysis.id, status: analysis.status, parsedFiles: parsedFiles.length };
@@ -250,6 +308,14 @@ async function inProcessFetch(path, options, store) {
 
 async function readBody(request) {
   if (request.method === "GET") return {};
+  const contentType = request.headers['content-type'] || '';
+
+  // multipart/form-data — body를 바로 읽지 않고 request를 전달
+  if (contentType.includes('multipart/form-data')) {
+    return { _multipart: true, _request: request };
+  }
+
+  // 기존 JSON 처리
   const chunks = [];
   for await (const chunk of request) chunks.push(chunk);
   const raw = Buffer.concat(chunks).toString("utf8");
