@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "evidence.schema.json",
+  "title": "Evidence",
+  "type": "object",
+  "required": ["id", "sourceFileId", "section", "quote", "parser", "confidence"],
+  "properties": {
+    "id": { "type": "string" },
+    "sourceFileId": { "type": "string" },
+    "sourceFileName": { "type": "string" },
+    "page": { "type": "number" },
+    "section": { "type": "string" },
+    "quote": { "type": "string" },
+    "parser": { "enum": ["markdown_fixture", "hwp", "hwpx", "docx", "pdf", "ocr", "xlsx"] },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+  }
+}

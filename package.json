@@ -1,0 +1,26 @@
+{
+  "name": "moli-public-proposal-agent",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "몰리 공공제안 에이전트 - 하네스 기반 공공 RFP 분석 서비스",
+  "scripts": {
+    "dev": "node src/server/server.mjs",
+    "start": "node src/server/server.mjs",
+    "lint": "node tests/tools/lint.mjs",
+    "typecheck": "node tests/tools/typecheck.mjs",
+    "test": "node --test tests/unit/*.test.mjs tests/contract/*.test.mjs tests/integration/*.test.mjs tests/e2e/*.test.mjs tests/accessibility/*.test.mjs",
+    "test:unit": "node --test tests/unit/*.test.mjs tests/contract/*.test.mjs",
+    "test:integration": "node --test tests/integration/*.test.mjs",
+    "test:e2e": "node --test tests/e2e/*.test.mjs",
+    "test:a11y": "node --test tests/accessibility/*.test.mjs",
+    "harness": "bash harness/scripts/run-all.sh",
+    "build": "node scripts/build.mjs"
+  },
+  "engines": {
+    "node": ">=25"
+  },
+  "dependencies": {
+    "kordoc": "^2.8.0"
+  }
+}

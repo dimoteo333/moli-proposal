@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "analysis.schema.json",
+  "title": "Analysis",
+  "type": "object",
+  "required": ["id", "status", "project", "requirements", "evidence", "estimation"],
+  "properties": {
+    "id": { "type": "string" },
+    "status": { "type": "string" },
+    "project": { "type": "object" },
+    "requirements": { "type": "array", "items": { "$ref": "requirement.schema.json" } },
+    "evidence": { "type": "array", "items": { "$ref": "evidence.schema.json" } },
+    "estimation": { "$ref": "estimation.schema.json" },
+    "packages": { "type": "object" },
+    "report": { "$ref": "report.schema.json" }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "noticeId": "sample-2026-001",
+  "source": "simulated-procurement",
+  "budgetKRW": 1250000000,
+  "contractPeriodMonths": 9,
+  "softwarePortionRatio": 0.72,
+  "infrastructurePortionRatio": 0.18,
+  "maintenanceRatio": 0.1,
+  "similarProjectCategory": "public-si-ai"
+}

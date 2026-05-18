@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "estimation.schema.json",
+  "title": "Estimation",
+  "type": "object",
+  "$defs": {
+    "mmRange": {
+      "type": "object",
+      "required": ["min", "recommended", "max"],
+      "properties": {
+        "min": { "type": "number", "minimum": 0 },
+        "recommended": { "type": "number", "minimum": 0 },
+        "max": { "type": "number", "minimum": 0 }
+      }
+    }
+  },
+  "required": ["totalMM", "confidenceScore", "riskScore", "assumptions", "rateTableVersion"],
+  "properties": {
+    "totalMM": { "$ref": "#/$defs/mmRange" },
+    "confidenceScore": { "type": "number" },
+    "riskScore": { "type": "number" },
+    "budgetAdequacyScore": { "type": ["number", "null"] },
+    "assumptions": { "type": "array" },
+    "rateTableVersion": { "type": "string" }
+  }
+}

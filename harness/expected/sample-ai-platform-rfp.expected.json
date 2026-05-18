@@ -1,0 +1,13 @@
+{
+  "fixture": "sample-ai-platform-rfp.md",
+  "project": {
+    "title": "공공 AI 분석 플랫폼 구축",
+    "agency": "샘플연구원",
+    "budgetKRW": 2800000000,
+    "contractPeriodMonths": 14
+  },
+  "minimumRequirementCount": 13,
+  "requiredTypes": ["functional", "non_functional", "security", "infrastructure", "migration", "proposal_item"],
+  "recommendedPackage": "L",
+  "reportLanguage": "ko"
+}
