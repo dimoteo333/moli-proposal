@@ -1,0 +1,13 @@
+{
+  "fixture": "sample-security-enhancement-rfp.md",
+  "project": {
+    "title": "공공 서비스 보안 강화 및 접근통제 고도화",
+    "agency": "샘플공단",
+    "budgetKRW": 760000000,
+    "contractPeriodMonths": 7
+  },
+  "minimumRequirementCount": 8,
+  "requiredTypes": ["functional", "non_functional", "security", "infrastructure", "proposal_item"],
+  "recommendedPackage": "M",
+  "reportLanguage": "ko"
+}

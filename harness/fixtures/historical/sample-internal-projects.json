@@ -1,0 +1,25 @@
+[
+  {
+    "id": "hist_001",
+    "projectName": "내부 민원 포털 재구축",
+    "clientType": "public",
+    "businessDomain": "공공행정",
+    "projectType": "시스템 구축",
+    "contractAmountKRW": 1100000000,
+    "contractPeriodMonths": 10,
+    "actualMM": 61.5,
+    "roleDistribution": {
+      "pm": 7.0,
+      "architect": 5.0,
+      "backend": 20.0,
+      "frontend": 14.0,
+      "data": 5.0,
+      "infra": 4.5,
+      "security": 3.0,
+      "qa": 3.0
+    },
+    "deliveryOutcome": "on_time",
+    "confidentialityLevel": "anonymized",
+    "validated": true
+  }
+]

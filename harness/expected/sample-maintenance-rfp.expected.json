@@ -1,0 +1,13 @@
+{
+  "fixture": "sample-maintenance-rfp.md",
+  "project": {
+    "title": "지자체 통합 행정 데이터 플랫폼 유지관리",
+    "agency": "샘플시 정보통신담당관",
+    "budgetKRW": 420000000,
+    "contractPeriodMonths": 12
+  },
+  "minimumRequirementCount": 10,
+  "requiredTypes": ["functional", "non_functional", "security", "infrastructure", "proposal_item"],
+  "recommendedPackage": "S",
+  "reportLanguage": "ko"
+}

@@ -1,0 +1,13 @@
+{
+  "fixture": "sample-public-si-rfp.md",
+  "project": {
+    "title": "도시 통합 민원 포털 재구축 및 AI 상담 지원 시스템",
+    "agency": "샘플광역시 디지털정책관",
+    "budgetKRW": 1250000000,
+    "contractPeriodMonths": 9
+  },
+  "minimumRequirementCount": 20,
+  "requiredTypes": ["functional", "non_functional", "security", "infrastructure", "migration", "proposal_item", "documentation"],
+  "recommendedPackage": "M",
+  "reportLanguage": "ko"
+}

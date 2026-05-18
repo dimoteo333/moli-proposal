@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "package.schema.json",
+  "title": "Package",
+  "type": "object",
+  "required": ["key", "name", "includedRequirementIds", "totalMM", "riskLevel", "confidence"],
+  "properties": {
+    "key": { "enum": ["S", "M", "L"] },
+    "name": { "enum": ["Small", "Medium", "Large"] },
+    "includedRequirementIds": { "type": "array", "items": { "type": "string" } },
+    "totalMM": { "$ref": "estimation.schema.json#/$defs/mmRange" },
+    "riskLevel": { "enum": ["low", "medium", "high"] },
+    "confidence": { "type": "number" }
+  }
+}

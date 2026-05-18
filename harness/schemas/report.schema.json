@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "report.schema.json",
+  "title": "Report",
+  "type": "object",
+  "required": ["id", "language", "markdown", "emailDraft", "sections"],
+  "properties": {
+    "id": { "type": "string" },
+    "language": { "const": "ko" },
+    "markdown": { "type": "string" },
+    "emailDraft": {
+      "type": "object",
+      "required": ["subject", "body"],
+      "properties": {
+        "subject": { "type": "string" },
+        "body": { "type": "string" }
+      }
+    },
+    "sections": { "type": "array", "items": { "type": "string" } }
+  }
+}
