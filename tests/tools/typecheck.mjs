@@ -7,6 +7,7 @@ const files = [];
 for (const root of roots) {
   files.push(...await collect(root, /\.(mjs|js|ts|json)$/));
 }
+files.push(...await collect(".", /^[^/]+\.(mjs|js|ts|json)$/));
 
 for (const file of files) {
   if (file.endsWith(".json")) {
