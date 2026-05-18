@@ -18,7 +18,7 @@ const fixtureDir = join(rootDir, "harness/fixtures/rfp");
 const procurementFixture = join(rootDir, "harness/fixtures/procurement/sample-procurement-notice.json");
 const historicalFixture = join(rootDir, "harness/fixtures/historical/sample-internal-projects.json");
 
-export async function createServer({ port = 3000 } = {}) {
+export async function createServer({ port = 3000, allowInProcessFallback = true } = {}) {
   const analyses = new Map();
   const shares = new Map();
   const store = { analyses, shares };
@@ -45,7 +45,7 @@ export async function createServer({ port = 3000 } = {}) {
       httpServer.listen(port, "127.0.0.1", resolve);
     });
   } catch (error) {
-    if (error.code !== "EPERM") throw error;
+    if (error.code !== "EPERM" || !allowInProcessFallback) throw error;
     return {
       url: "http://moli.local",
       fetch: (path, options = {}) => inProcessFetch(path, options, store),
@@ -270,7 +270,10 @@ function badRequest(message) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const port = Number(process.env.PORT || 3000);
-  createServer({ port }).then((server) => {
+  createServer({ port, allowInProcessFallback: false }).then((server) => {
     console.log(`MOLI service listening at ${server.url}`);
+  }).catch((error) => {
+    console.error(`MOLI service failed to start: ${error.message}`);
+    process.exit(1);
   });
 }

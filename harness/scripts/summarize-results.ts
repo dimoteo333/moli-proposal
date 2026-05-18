@@ -13,7 +13,7 @@ await mkdir("harness/reports", { recursive: true });
 const content = await readFile("harness/fixtures/rfp/sample-public-si-rfp.md", "utf8");
 const parsed = parseFile({ fileId: "file_public_si", fileName: "sample-public-si-rfp.md", content });
 const analysis = buildPackages(estimateAnalysis(extractAnalysisModel(parsed)));
-const report = generateKoreanReport(analysis);
+const report = generateKoreanReport(analysis, { generatedAt: "2026-05-18T00:00:00.000Z" });
 const share = createShareLink({ ...analysis, report }, { permission: "editable_recalculation", expiresInDays: 7 });
 const optional = analysis.requirements.find((requirement) => !requirement.mandatory && requirement.included);
 const derived = recalculateSharedAnalysis({ ...analysis, report }, share, {

@@ -1,6 +1,7 @@
 import { nowIso, stableId } from "../../lib/ids.mjs";
 
-export function generateKoreanReport(analysis) {
+export function generateKoreanReport(analysis, options = {}) {
+  const generatedAt = options.generatedAt || nowIso();
   const pkgKey = analysis.packageSummary?.selectedPackage || analysis.packageSummary?.recommendedPackage || "M";
   const pkg = analysis.packages?.[pkgKey];
   const total = pkg?.totalMM || analysis.estimation.totalMM;
@@ -70,7 +71,7 @@ export function generateKoreanReport(analysis) {
     "## 근거 부록",
     ...evidenceAppendix(included, evidenceMap),
     "",
-    `생성 시각: ${nowIso()}`
+    `생성 시각: ${generatedAt}`
   ].join("\n");
 
   const emailDraft = {
@@ -98,7 +99,7 @@ export function generateKoreanReport(analysis) {
     format: "markdown",
     markdown,
     emailDraft,
-    generatedAt: nowIso(),
+    generatedAt,
     sections: [
       "경영진 요약",
       "사업 개요",
@@ -152,4 +153,3 @@ function evidenceAppendix(requirements, evidenceMap) {
   }
   return rows.length ? rows : ["- 근거 없음"];
 }
-
