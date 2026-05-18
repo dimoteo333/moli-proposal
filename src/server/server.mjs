@@ -9,6 +9,7 @@ import { estimateAnalysis, applyRequirementOverride } from "../features/estimati
 import { buildPackages } from "../features/package-builder/packageBuilder.mjs";
 import { generateKoreanReport } from "../features/report/reportGenerator.mjs";
 import { createShareLink, recalculateSharedAnalysis } from "../features/sharing/sharing.mjs";
+import { getRuntimeConfig, publicRuntimeConfig } from "../lib/env.mjs";
 import { stableId } from "../lib/ids.mjs";
 
 const rootDir = fileURLToPath(new URL("../..", import.meta.url));
@@ -18,10 +19,10 @@ const fixtureDir = join(rootDir, "harness/fixtures/rfp");
 const procurementFixture = join(rootDir, "harness/fixtures/procurement/sample-procurement-notice.json");
 const historicalFixture = join(rootDir, "harness/fixtures/historical/sample-internal-projects.json");
 
-export async function createServer({ port = 3000, allowInProcessFallback = true } = {}) {
-  const analyses = new Map();
-  const shares = new Map();
-  const store = { analyses, shares };
+export async function createServer({ port, allowInProcessFallback = true, env = process.env } = {}) {
+  const runtimeConfig = getRuntimeConfig(env);
+  const listenPort = port ?? runtimeConfig.app.port;
+  const store = createMemoryStore(runtimeConfig);
 
   const httpServer = createHttpServer(async (request, response) => {
     try {
@@ -42,7 +43,7 @@ export async function createServer({ port = 3000, allowInProcessFallback = true 
   try {
     await new Promise((resolve, reject) => {
       httpServer.once("error", reject);
-      httpServer.listen(port, "127.0.0.1", resolve);
+      httpServer.listen(listenPort, "127.0.0.1", resolve);
     });
   } catch (error) {
     if (error.code !== "EPERM" || !allowInProcessFallback) throw error;
@@ -63,7 +64,19 @@ export async function createServer({ port = 3000, allowInProcessFallback = true 
   };
 }
 
-async function dispatchApi(method, path, body, store) {
+export function createMemoryStore(runtimeConfig = getRuntimeConfig()) {
+  return {
+    analyses: new Map(),
+    shares: new Map(),
+    runtimeConfig
+  };
+}
+
+export async function dispatchApi(method, path, body, store) {
+  if (method === "GET" && path === "/api/runtime/config") {
+    return publicRuntimeConfig(store.runtimeConfig);
+  }
+
   if (method === "POST" && path === "/api/analysis") {
     const id = stableId("analysis", `${body.sourceUrl}-${body.analysisMode}-${Date.now()}`);
     const analysis = {
@@ -269,8 +282,7 @@ function badRequest(message) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const port = Number(process.env.PORT || 3000);
-  createServer({ port, allowInProcessFallback: false }).then((server) => {
+  createServer({ allowInProcessFallback: false }).then((server) => {
     console.log(`MOLI service listening at ${server.url}`);
   }).catch((error) => {
     console.error(`MOLI service failed to start: ${error.message}`);

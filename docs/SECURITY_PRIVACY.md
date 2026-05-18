@@ -12,7 +12,13 @@
 
 ## Prompt Injection Defense
 
-RFP 텍스트는 시스템 프롬프트가 아니라 근거 데이터입니다. 현재 MVP는 LLM을 호출하지 않지만 같은 경계를 유지합니다.
+RFP 텍스트는 시스템 프롬프트가 아니라 근거 데이터입니다. GLM 보강을 켜더라도 문서 내부 문장은 개발자 지시나 시스템 지시로 취급하지 않습니다.
+
+## External AI Keys
+
+`GLM_API_KEY`와 `SUPABASE_SERVICE_ROLE_KEY`는 서버 런타임에서만 읽습니다. `/api/runtime/config`는 설정 여부와 짧은 마스킹 프리뷰만 반환하며, 브라우저에 키 원문을 보내지 않습니다.
+
+Vision OCR은 페이지 이미지, 표, 다이어그램처럼 필요한 블록만 전송합니다. 전체 문서를 무조건 외부 모델로 보내지 않고, confidence가 낮은 영역을 우선 보강합니다.
 
 ## Sharing Modes
 

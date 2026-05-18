@@ -3,6 +3,27 @@ import test from "node:test";
 
 import { createServer } from "../../src/server/server.mjs";
 
+test("API exposes runtime provider readiness without raw keys", async (t) => {
+  const server = await createServer({
+    port: 0,
+    env: {
+      GLM_API_KEY: "glm-secret-123456",
+      SUPABASE_SERVICE_ROLE_KEY: "service-role-secret-abcdef"
+    }
+  });
+  t.after(async () => server.close());
+
+  const response = await server.fetch("/api/runtime/config");
+  const payload = await response.json();
+  const serialized = JSON.stringify(payload);
+
+  assert.equal(response.ok, true, serialized);
+  assert.equal(payload.glm.apiKeySet, true);
+  assert.equal(payload.supabase.serviceRoleKeySet, true);
+  assert.equal(serialized.includes("glm-secret-123456"), false);
+  assert.equal(serialized.includes("service-role-secret-abcdef"), false);
+});
+
 test("API supports the full fixture-backed analysis flow", async (t) => {
   const server = await createServer({ port: 0 });
   t.after(async () => server.close());

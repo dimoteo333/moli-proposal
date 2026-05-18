@@ -3,6 +3,7 @@ import { join } from "node:path";
 
 const files = [
   ...await collect("src", /\.(mjs|js|css|html)$/),
+  ...await collect("api", /\.(mjs|js)$/),
   ...await collect("tests", /\.(mjs|js)$/),
   ...await collect("harness", /\.(mjs|ts|sh|json|md)$/),
   ...await collect("docs", /\.md$/),

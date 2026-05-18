@@ -10,6 +10,8 @@ npm run dev
 
 기본 주소는 `http://127.0.0.1:3000`입니다. 현재 구현은 외부 패키지 없이 Node 내장 API와 브라우저 표준 기능만 사용합니다.
 
+환경 변수는 `.env.example`을 기준으로 설정합니다. GLM 보강은 기본적으로 꺼져 있으며, 실제 문서 품질 개선 실험을 시작할 때 `GLM_API_KEY`와 `MOLI_ENABLE_GLM_ANALYSIS=true`를 서버 환경에 등록합니다. 키 원문은 브라우저 API 응답으로 노출하지 않습니다.
+
 ## 검증
 
 ```bash
@@ -35,6 +37,14 @@ npm run build
 5. 다층 공수 산정과 S/M/L 패키지 비교
 6. 한국어 보고서와 메일 초안 생성
 7. 공유 링크와 파생 재산정 버전 생성
+
+## 배포 준비
+
+- Vercel: `vercel.json`은 `npm run build`와 `dist/` 정적 산출물을 사용합니다. `/api/*`는 `api/[...path].mjs` Vercel Function으로 처리합니다.
+- Supabase: `supabase/migrations/202605180001_initial_schema.sql`에 초기 분석/파일/근거/요구사항/리포트/공유/audit 테이블과 RLS, service role `GRANT`를 포함했습니다.
+- GLM: [docs/AI_PROVIDER_GLM.md](docs/AI_PROVIDER_GLM.md)에 서버 환경 변수, 키 노출 정책, 폴백 원칙을 정리했습니다.
+- Vision OCR: [docs/GLM_VISION_MCP_REVIEW.md](docs/GLM_VISION_MCP_REVIEW.md)에 Z.AI Vision MCP Server 검토 결과와 운영 적용 판단을 남겼습니다.
+- 단계별 배포 절차: [docs/DEPLOYMENT_VERCEL_SUPABASE.md](docs/DEPLOYMENT_VERCEL_SUPABASE.md)를 따릅니다.
 
 ## 제한 사항
 

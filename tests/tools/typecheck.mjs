@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-const roots = ["src", "tests", "harness/scripts", "scripts"];
+const roots = ["src", "api", "tests", "harness/scripts", "scripts"];
 const files = [];
 for (const root of roots) {
   files.push(...await collect(root, /\.(mjs|js|ts|json)$/));
