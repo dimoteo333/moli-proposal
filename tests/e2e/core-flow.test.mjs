@@ -15,7 +15,8 @@ test("web app shell exposes Korean core-flow screens and design-system hooks", a
   assert.match(html, /app\.js/);
 
   const css = await (await server.fetch("/styles.css")).text();
-  assert.match(css, /--color-primary:\s*#0046ff/);
+  assert.match(css, /--color-primary:\s*#6b4eff/);
+  assert.match(css, /--color-shinhan:\s*#0046ff/);
 
   const dataJs = await (await server.fetch("/data.js")).text();
   assert.match(dataJs, /MOLI_DATA/);
@@ -33,4 +34,11 @@ test("web app shell exposes Korean core-flow screens and design-system hooks", a
   // Verify design logo.ico is available
   const logoRes = await server.fetch("/logo.ico");
   assert.equal(logoRes.ok, true);
+
+  // Verify brand assets (Moli character, logo, Shinhan CI) are served as PNG
+  for (const asset of ["logo.png", "moli-character.png", "moli-icon-4.png", "shinhan-ci.png"]) {
+    const res = await server.fetch(`/assets/${asset}`);
+    assert.equal(res.ok, true, `missing /assets/${asset}`);
+    assert.equal(res.headers.get("content-type"), "image/png");
+  }
 });
