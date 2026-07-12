@@ -79,6 +79,7 @@ function ChecklistScreen({ nav, toast }) {
   };
 
   return (
+    <>
     <Page title="공수 산정" onBack={() => nav("summary")} hasBottomBar
       right={<>
         <button className="icon-btn" aria-label="정렬"><Icon name="sort" size={20}/></button>
@@ -158,11 +159,14 @@ function ChecklistScreen({ nav, toast }) {
         </button>
         <div className="section-spacer"/>
       </div>
-
-      <Drawer open={!!evidenceItem} onClose={() => setEvidenceItem(null)} title="산정 근거">
-        {evidenceItem && <EvidenceContent req={evidenceItem}/>}
-      </Drawer>
     </Page>
+
+    {/* Drawer는 Page(스크롤 영역) 밖, 폰 프레임 레벨에 렌더해야
+        닫힘 상태(translateY 100%)가 스크롤 콘텐츠에 딸려 올라오지 않는다 */}
+    <Drawer open={!!evidenceItem} onClose={() => setEvidenceItem(null)} title="산정 근거">
+      {evidenceItem && <EvidenceContent req={evidenceItem}/>}
+    </Drawer>
+    </>
   );
 }
 
@@ -286,7 +290,7 @@ function EvidenceContent({ req }) {
                 </div>
                 <div style={{ marginTop: 12 }}>
                   <div style={{ fontSize: 11, fontWeight: 700, color: "var(--color-text-subtle)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>산정 근거</div>
-                  <div className="col" style={{ background: "#fafbfc", borderRadius: 12, padding: "8px 12px", border: "1px solid var(--color-border)" }}>
+                  <div className="col" style={{ background: "#fbfaff", borderRadius: 12, padding: "8px 12px", border: "1px solid var(--color-border)" }}>
                     {ev.basis.map(([k, v], i) => (
                       <div key={i} className="row between" style={{ padding: "6px 0", borderBottom: i < ev.basis.length - 1 ? "1px solid var(--color-border)" : "none", fontSize: 13 }}>
                         <span style={{ color: "var(--color-text-muted)" }}>{k}</span>
@@ -380,7 +384,7 @@ function PackagesScreen({ nav }) {
                 <div className="stat">제안 아이템<strong>{t.prop}개</strong></div>
                 <div className="stat">리스크<strong>{p.risk}</strong></div>
               </div>
-              <div className="ko" style={{ marginTop: 12, padding: 10, background: selected === k ? "var(--color-primary-soft)" : "#fafbfc", borderRadius: 10, fontSize: 12, color: "var(--color-text-muted)", lineHeight: 1.5 }}>
+              <div className="ko" style={{ marginTop: 12, padding: 10, background: selected === k ? "var(--color-primary-soft)" : "#fbfaff", borderRadius: 10, fontSize: 12, color: "var(--color-text-muted)", lineHeight: 1.5 }}>
                 <strong style={{ color: "var(--color-navy)" }}>적합한 경우:</strong> {p.bestFor}
               </div>
             </div>
@@ -425,6 +429,135 @@ function PackagesScreen({ nav }) {
 }
 
 // ===== Report Preview =====
+
+// WBS 데이터 — 화면 미리보기와 PDF 출력이 공유한다
+const REPORT_WBS_ROWS = [
+  ["1. 착수 및 아키텍처 설계", "M1–M2", "PM, Architect"],
+  ["2. 핵심 콘솔 및 인증 구축", "M2–M5", "Frontend, Backend"],
+  ["3. AI 이벤트 모델 PoC", "M3–M6", "Data, Architect"],
+  ["4. 인프라 및 CSAP 환경 구성", "M3–M7", "Infra, Security"],
+  ["5. 이력 데이터 이관 (ETL)", "M5–M9", "Data, Backend"],
+  ["6. 통합 및 테스트", "M8–M11", "QA, Backend"],
+  ["7. 파일럿 및 안정화", "M11–M13", "All"],
+  ["8. 교육 및 인수인계", "M13–M14", "PM, QA"]
+];
+
+// 전체 레포트를 인쇄용 HTML로 구성한다.
+// 새 창에서 브라우저 인쇄 대화상자를 띄우고, 사용자가 "PDF로 저장"을 선택하면
+// 별도 라이브러리 없이 한글 폰트가 완벽한 PDF가 저장된다.
+function buildReportPrintHtml(data) {
+  const p = data.project;
+  const r = data.report;
+  const today = new Date().toLocaleDateString("ko-KR");
+  const estimateRows = r.estimateRows
+    .map(([label, value]) => `<tr><td>${label}</td><td class="num">${value}</td></tr>`)
+    .join("");
+  const wbsRows = REPORT_WBS_ROWS
+    .map(([task, period, roles]) => `<tr><td>${task}<div class="sub">${roles}</div></td><td class="num">${period}</td></tr>`)
+    .join("");
+  const riskItems = r.risksKO
+    .map((risk, i) => `<li><strong>${i + 1}.</strong> ${risk}</li>`)
+    .join("");
+
+  return `<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>${p.title} — 제안 검토 보고서</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+    color: #262440; margin: 0; font-size: 12.5px; line-height: 1.65;
+    word-break: keep-all;
+  }
+  .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+  .brand img { width: 28px; height: 28px; border-radius: 8px; }
+  .brand .name { font-weight: 700; font-size: 13px; color: #6b4eff; }
+  .brand .meta { margin-left: auto; font-size: 11px; color: #6d6a8a; }
+  h1 { font-size: 21px; letter-spacing: -0.02em; line-height: 1.35; margin: 0 0 4px; color: #14122b; }
+  .agency { color: #6d6a8a; font-size: 13px; margin-bottom: 24px; }
+  h2 {
+    font-size: 14.5px; color: #14122b; margin: 26px 0 8px; padding-bottom: 6px;
+    border-bottom: 2px solid #6b4eff; letter-spacing: -0.01em;
+  }
+  p { margin: 0 0 10px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  td { padding: 7px 4px; border-bottom: 1px solid #e9e6f4; vertical-align: top; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; color: #14122b; }
+  td .sub { font-size: 11px; color: #6d6a8a; margin-top: 1px; }
+  tr.total td { border-top: 2px solid #14122b; border-bottom: none; font-weight: 700; color: #14122b; }
+  ul { margin: 6px 0; padding-left: 4px; list-style: none; }
+  ul li { margin-bottom: 8px; }
+  .footer {
+    margin-top: 36px; padding-top: 12px; border-top: 1px solid #e9e6f4;
+    font-size: 10.5px; color: #9d9ab8; display: flex; justify-content: space-between;
+  }
+  section { break-inside: avoid; }
+</style>
+</head>
+<body>
+  <div class="brand">
+    <img src="${location.origin}/assets/logo.png" alt="">
+    <span class="name">몰리 공공제안 에이전트</span>
+    <span class="meta">생성일 ${today} · Medium 패키지 기준</span>
+  </div>
+
+  <h1>${p.title}</h1>
+  <div class="agency">${p.agency} · 제안 검토 보고서</div>
+
+  <section>
+    <h2>1. 경영진 요약</h2>
+    <p>${r.summaryKO}</p>
+    <h2>2. 사업 범위 해석</h2>
+    <p>${r.scopeKO}</p>
+    <h2>3. 입찰 권고</h2>
+    <p><strong>Medium 패키지</strong>로의 제안을 권고합니다. AI 이벤트 분류 모듈과 운영 KPI 대시보드는 기존 SI 경쟁사 대비 차별화 가치를 확보할 수 있으며, ${p.contractPeriodMonths}개월 사업기간 내 안정적 납품이 가능합니다.</p>
+  </section>
+
+  <section>
+    <h2>4. 공수 산정 — 42.5 MM</h2>
+    <p>신뢰도 78% 기준 범위는 35.0–52.0 MM입니다. 요구사항 기반 Bottom-up (60%), KOSA 가이드 참조 (25%), 발주 예산 역산 (15%)을 가중 조합하여 산출하였습니다.</p>
+    <table>
+      ${estimateRows}
+      <tr class="total"><td>합계</td><td class="num">42.5 MM</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>5. WBS · 납품 계획 (${p.contractPeriodMonths}개월)</h2>
+    <table>${wbsRows}</table>
+  </section>
+
+  <section>
+    <h2>6. 주요 리스크 및 대응</h2>
+    <ul>${riskItems}</ul>
+    <p><strong>발주처 확인 요청:</strong> (1) 이관 대상 비정형 이력 로그의 규모와 형태, (2) AI 이벤트 분류 모델의 정량 평가 기준 — 제안 확정 전 명확화를 권장합니다.</p>
+  </section>
+
+  <div class="footer">
+    <span>© 2026 Shinhan Bank · MOLI Public Proposal Agent</span>
+    <span>본 보고서는 몰리가 생성한 검토 초안입니다</span>
+  </div>
+</body>
+</html>`;
+}
+
+function downloadReportPdf(toast) {
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    toast("팝업 차단을 해제한 뒤 다시 시도해 주세요.");
+    return;
+  }
+  printWindow.document.write(buildReportPrintHtml(window.MOLI_DATA));
+  printWindow.document.close();
+  printWindow.focus();
+  // 로고 이미지·폰트 렌더가 끝난 뒤 인쇄 대화상자를 연다
+  printWindow.onload = () => setTimeout(() => printWindow.print(), 200);
+  toast("인쇄 대화상자에서 'PDF로 저장'을 선택하세요.");
+}
+
 function ReportScreen({ nav, toast }) {
   const data = window.MOLI_DATA;
   const [section, setSection] = useStateB(0);
@@ -433,7 +566,7 @@ function ReportScreen({ nav, toast }) {
   return (
     <Page title="레포트 미리보기" onBack={() => nav("checklist")} hasBottomBar
       right={<>
-        <button className="icon-btn" aria-label="다운로드"><Icon name="down" size={20}/></button>
+        <button className="icon-btn" aria-label="PDF 다운로드" onClick={() => downloadReportPdf(toast)}><Icon name="down" size={20}/></button>
         <button className="icon-btn" aria-label="공유" onClick={() => nav("share")}><Icon name="share" size={20}/></button>
       </>}
       bottomBar={
@@ -506,16 +639,7 @@ function ReportScreen({ nav, toast }) {
               <div className="small-label">WBS · 작업 분할 구조</div>
               <h2 style={{ marginTop: 0 }}>납품 계획 (14개월)</h2>
               <div style={{ marginTop: 12 }}>
-                {[
-                  ["1. 착수 및 아키텍처 설계", "M1–M2", "PM, Architect"],
-                  ["2. 핵심 콘솔 및 인증 구축", "M2–M5", "Frontend, Backend"],
-                  ["3. AI 이벤트 모델 PoC", "M3–M6", "Data, Architect"],
-                  ["4. 인프라 및 CSAP 환경 구성", "M3–M7", "Infra, Security"],
-                  ["5. 이력 데이터 이관 (ETL)", "M5–M9", "Data, Backend"],
-                  ["6. 통합 및 테스트", "M8–M11", "QA, Backend"],
-                  ["7. 파일럿 및 안정화", "M11–M13", "All"],
-                  ["8. 교육 및 인수인계", "M13–M14", "PM, QA"]
-                ].map((row, i) => (
+                {REPORT_WBS_ROWS.map((row, i) => (
                   <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 12, padding: "10px 0", borderBottom: i < 7 ? "1px solid var(--color-border)" : "none" }}>
                     <div>
                       <div style={{ fontSize: 13.5, color: "var(--color-navy)", fontWeight: 600 }}>{row[0]}</div>
@@ -551,7 +675,7 @@ function ReportScreen({ nav, toast }) {
             <Icon name="copy" size={14}/>
             섹션 복사
           </button>
-          <button className="btn secondary" style={{ flex: 1 }}>
+          <button className="btn secondary" style={{ flex: 1 }} onClick={() => downloadReportPdf(toast)}>
             <Icon name="down" size={14}/>
             전체 PDF
           </button>
@@ -669,7 +793,7 @@ function ShareScreen({ nav, toast }) {
         <div className="card" style={{ marginTop: 12 }}>
           <div className="card-section">
             <div className="card-title">공유 링크</div>
-            <div className="row gap-8" style={{ padding: 12, background: "#fafbfc", border: "1px solid var(--color-border)", borderRadius: 12 }}>
+            <div className="row gap-8" style={{ padding: 12, background: "#fbfaff", border: "1px solid var(--color-border)", borderRadius: 12 }}>
               <Icon name="link" size={16} color="var(--color-text-muted)"/>
               <div style={{ flex: 1, fontSize: 13, color: "var(--color-text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: "Inter, system-ui" }}>{link}</div>
               <button className="btn ghost sm" onClick={() => toast("링크가 복사되었습니다.")} style={{ padding: "0 8px" }}>

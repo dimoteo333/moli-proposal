@@ -10,7 +10,7 @@ test("environment example includes production deployment keys without secret val
     "GLM_MODEL=",
     "GLM_VISION_MODEL=",
     "GLM_VISION_MCP_SERVER_URL=",
-    "MOLI_ENABLE_GLM_ANALYSIS=",
+    "MOLI_ENABLE_LLM=",
     "MOLI_ENABLE_GLM_VISION_MCP=",
     "SUPABASE_URL=",
     "SUPABASE_ANON_KEY=",

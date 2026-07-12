@@ -20,6 +20,12 @@ for (const f of files) {
 
 await copyFile("public/logo.ico", join(dist, "logo.ico"));
 
+// Brand assets (Moli character, logo, Shinhan CI)
+await mkdir(join(dist, "assets"), { recursive: true });
+for (const asset of await readdir("src/app/assets")) {
+  await copyFile(join("src/app/assets", asset), join(dist, "assets", asset));
+}
+
 await writeFile(join(dist, "build-meta.json"), JSON.stringify({
   name: "moli-public-proposal-agent",
   reportLanguage: "ko",

@@ -2,11 +2,20 @@
 
 const { useState: useStateA, useEffect: useEffectA, useRef: useRefA } = React;
 
-// ----- Logo Mark -----
+// ----- Logo Mark (real brand asset: assets/logo.png) -----
 function LogoMark({ size = "md" }) {
   return (
     <div className={"logo-mark" + (size === "sm" ? " sm" : "")}>
-      <span>몰리</span>
+      <img src="/assets/logo.png" alt="몰리 로고"/>
+    </div>
+  );
+}
+
+// ----- Moli character avatar (assets/moli-icon-4.png) -----
+function MoliAvatar({ size = 44 }) {
+  return (
+    <div className="moli-avatar" style={{ width: size, height: size }}>
+      <img src="/assets/moli-icon-4.png" alt="몰리 캐릭터"/>
     </div>
   );
 }
@@ -56,10 +65,12 @@ function HomeScreen({ nav, hasRecents = true }) {
             </div>
           </div>
           <div className="nav-actions">
-            <button className="nav-pill">
-              <Icon name="help" size={14}/>
-              데모
-            </button>
+            {data.demo.live && (
+              <span className="live-pill" aria-label="라이브 데모 진행 중">
+                <span className="live-dot"/>
+                LIVE 데모
+              </span>
+            )}
             <button className="nav-icon" aria-label="메뉴">
               <Icon name="menu" size={18}/>
             </button>
@@ -72,7 +83,7 @@ function HomeScreen({ nav, hasRecents = true }) {
             <span className="ico-wrap">
               <Icon name="sparkle" size={11} color="#fff" stroke={2.2}/>
             </span>
-            <span>v1.0 베타 · 한글 레포트 지원</span>
+            <span>{data.demo.eyebrow}</span>
             <span className="new-dot"/>
           </div>
 
@@ -105,7 +116,12 @@ function HomeScreen({ nav, hasRecents = true }) {
               <div className="av" style={{ background: "linear-gradient(135deg, #16b364, #4cca8b)" }}>YH</div>
               <div className="av" style={{ background: "linear-gradient(135deg, #dc6803, #f6a259)" }}>+</div>
             </div>
-            <span>제안팀 · PMO · SI 아키텍트가 함께 쓰는 워크벤치</span>
+            <span>신한은행 제안팀 · PMO · SI 아키텍트가 함께 쓰는 워크벤치</span>
+          </div>
+
+          {/* Moli waters the analysis below — reserves its own space so it never covers content */}
+          <div className="hero-moli-wrap" aria-hidden="true">
+            <img className="hero-moli" src="/assets/moli-character.png" alt=""/>
           </div>
 
           {/* Floating preview card */}
@@ -164,29 +180,38 @@ function HomeScreen({ nav, hasRecents = true }) {
           </div>
         </section>
 
-        {/* Stats */}
+        {/* Stats — values live in MOLI_DATA.demo.stats so they can be edited during the live demo */}
         <div className="stats-strip">
-          <div className="item">
-            <div className="num">
-              {"<"}90<span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-muted)", marginLeft: 2 }}>초</span>
+          {data.demo.stats.map((s, i) => (
+            <div className="item" key={i}>
+              <div className="num">
+                {s.value}
+                {s.unit && <span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-muted)", marginLeft: 2 }}>{s.unit}</span>}
+              </div>
+              <div className="lbl">{s.label}</div>
             </div>
-            <div className="lbl">평균 분석 시간</div>
-          </div>
-          <div className="item">
-            <div className="num">96<span style={{ fontSize: 12, fontWeight: 600, color: "var(--color-text-muted)", marginLeft: 2 }}>%</span></div>
-            <div className="lbl">근거 매핑률</div>
-          </div>
-          <div className="item">
-            <div className="num">S·M·L</div>
-            <div className="lbl">패키지 비교</div>
-          </div>
+          ))}
         </div>
+
+        {/* Live demo banner — the AI coding agent narrates its edits here */}
+        {data.demo.live && (
+          <div className="demo-banner">
+            <MoliAvatar size={40}/>
+            <div style={{ flex: 1 }}>
+              <div className="demo-title">
+                <Icon name="sparkle" size={13} color="var(--color-primary)" stroke={2.2}/>
+                {data.demo.bannerTitle}
+              </div>
+              <div className="demo-body ko">{data.demo.bannerBody}</div>
+            </div>
+          </div>
+        )}
 
         {/* Features */}
         <section className="land-section">
           <div className="land-eyebrow">왜 몰리인가</div>
           <h2 className="land-title ko">
-            챗봇이 아닌, <span style={{ background: "linear-gradient(135deg, #0046ff, #7a5af8)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>근거 기반 워크벤치</span>
+            챗봇이 아닌, <span style={{ background: "linear-gradient(135deg, #6b4eff, #0046ff)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>근거 기반 워크벤치</span>
           </h2>
           <p className="land-sub ko">
             모든 산정에는 원문 인용·신뢰도·가정이 함께 따라옵니다. AI가 만든 추정도 사람이 검토하고 조정할 수 있어야 합니다.
@@ -286,7 +311,7 @@ function HomeScreen({ nav, hasRecents = true }) {
         {!hasRecents && (
           <section className="recent-section">
             <div className="empty-state" style={{ padding: "20px 24px" }}>
-              <div className="glyph"><Icon name="doc" size={28} color="var(--color-ai)"/></div>
+              <div className="glyph moli"><img src="/assets/moli-icon-4.png" alt="새싹 화분을 든 몰리"/></div>
               <div className="title">첫 분석을 시작해 보세요</div>
               <div className="body ko">RFP 파일과 공고 URL을 함께 입력하면 추출 정확도가 더 높아집니다.</div>
             </div>
@@ -317,7 +342,11 @@ function HomeScreen({ nav, hasRecents = true }) {
             <Icon name="shield" size={12} color="var(--color-text-muted)"/>
             업로드 파일은 암호화 저장 · AI 학습 미사용
           </div>
-          <div>© 2026 Shinhan · MOLI Public Proposal Agent v1.0</div>
+          <div className="co-brand" style={{ marginBottom: 6 }}>
+            <img src="/assets/shinhan-ci.png" alt="신한은행 CI"/>
+            신한은행 × 몰리
+          </div>
+          <div>© 2026 Shinhan Bank · MOLI Public Proposal Agent v1.0</div>
         </footer>
       </div>
     </Page>
@@ -463,9 +492,9 @@ function UploadProgressScreen({ nav }) {
       <div className="page-padding">
         <div className="card">
           <div className="row gap-12" style={{ marginBottom: 14, alignItems: "center" }}>
-            <LogoMark size="sm"/>
+            <MoliAvatar/>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--color-navy)" }}>RFP 문서를 분석하고 있습니다</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--color-navy)" }}>몰리가 RFP 문서를 읽고 있어요</div>
               <div style={{ fontSize: 12, color: "var(--color-text-muted)" }}>표와 요구사항 구조를 함께 분석합니다.</div>
             </div>
           </div>
@@ -665,14 +694,9 @@ function SummaryScreen({ nav }) {
         {/* AI recommendation */}
         <div className="card" style={{ marginTop: 12, background: "var(--color-ai-soft)", borderColor: "#dcd9ff" }}>
           <div className="row gap-12" style={{ alignItems: "flex-start" }}>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10, background: "var(--color-ai)", color: "#fff",
-              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
-            }}>
-              <Icon name="sparkle" size={18} color="#fff"/>
-            </div>
+            <MoliAvatar size={36}/>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--color-ai)", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 4 }}>AI 검토 의견</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "var(--color-ai)", letterSpacing: "0.04em", textTransform: "uppercase", marginBottom: 4 }}>몰리의 검토 의견</div>
               <div className="ko" style={{ fontSize: 14, color: "var(--color-navy)", lineHeight: 1.55 }}>
                 <strong>Medium 패키지 기준 제안 검토를 권장</strong>합니다. AI 이벤트 분류 모델을 차별화 항목으로 강조하되,
                 이력 데이터 이관 규모는 제안 전 발주처 질의를 권장합니다.
@@ -711,5 +735,5 @@ function SummaryScreen({ nav }) {
 }
 
 Object.assign(window, {
-  HomeScreen, NewAnalysisScreen, UploadProgressScreen, ParsingReviewScreen, SummaryScreen, LogoMark
+  HomeScreen, NewAnalysisScreen, UploadProgressScreen, ParsingReviewScreen, SummaryScreen, LogoMark, MoliAvatar
 });

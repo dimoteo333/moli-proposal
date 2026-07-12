@@ -8,6 +8,7 @@ import { extractAnalysisModel } from "../features/extraction/extraction.mjs";
 import { estimateAnalysis, applyRequirementOverride } from "../features/estimation/estimation.mjs";
 import { buildPackages } from "../features/package-builder/packageBuilder.mjs";
 import { generateKoreanReport } from "../features/report/reportGenerator.mjs";
+import { createLlmAdapter, applyLlmEnhancement } from "../features/llm/llmAdapter.mjs";
 import { createShareLink, recalculateSharedAnalysis } from "../features/sharing/sharing.mjs";
 import { getRuntimeConfig, publicRuntimeConfig } from "../lib/env.mjs";
 import { stableId } from "../lib/ids.mjs";
@@ -64,11 +65,12 @@ export async function createServer({ port, allowInProcessFallback = true, env = 
   };
 }
 
-export function createMemoryStore(runtimeConfig = getRuntimeConfig()) {
+export function createMemoryStore(runtimeConfig = getRuntimeConfig(), { llmAdapter } = {}) {
   return {
     analyses: new Map(),
     shares: new Map(),
-    runtimeConfig
+    runtimeConfig,
+    llmAdapter: llmAdapter || createLlmAdapter(runtimeConfig.llm)
   };
 }
 
@@ -223,10 +225,13 @@ export async function dispatchApi(method, path, body, store) {
     const analysis = requireAnalysis(store, reportMatch[1]);
     const packaged = analysis.packageSummary ? analysis : buildPackages(analysis);
     const report = generateKoreanReport(packaged);
-    packaged.report = report;
+    // LLM 보강은 선택적: 비활성/실패 시 결정적 레포트를 그대로 반환한다.
+    const llmAdapter = store.llmAdapter || createLlmAdapter(store.runtimeConfig?.llm || {});
+    const enhancement = await llmAdapter.enhanceReport(packaged, report);
+    packaged.report = applyLlmEnhancement(report, enhancement);
     packaged.status = "report_generated";
     store.analyses.set(packaged.id, packaged);
-    return report;
+    return packaged.report;
   }
 
   const shareMatch = path.match(/^\/api\/analysis\/([^/]+)\/share$/);
@@ -273,7 +278,9 @@ async function readStaticAsset(pathname) {
     ".css": "text/css; charset=utf-8",
     ".js": "text/javascript; charset=utf-8",
     ".ico": "image/x-icon",
-    ".svg": "image/svg+xml"
+    ".svg": "image/svg+xml",
+    ".png": "image/png",
+    ".webp": "image/webp"
   };
   return {
     body,

@@ -3,6 +3,28 @@
 // In production, data comes from /api/* endpoints.
 
 window.MOLI_DATA = (() => {
+  // =========================================================
+  // 라이브 데모 설정 — AI 코딩 에이전트가 시연 중 이 블록을 수정합니다.
+  // 서버 재시작 없이 브라우저 새로고침만으로 반영됩니다.
+  // 각 [LIVE-EDIT:*] 앵커는 docs/LIVE_DEMO_SCRIPT.md 의 장면과 1:1 대응합니다.
+  // =========================================================
+  const demo = {
+    // [LIVE-EDIT:live-toggle] false 로 바꾸면 LIVE 배지·데모 배너가 사라집니다.
+    live: true,
+    // [LIVE-EDIT:eyebrow] 홈 히어로 상단 배지 문구
+    eyebrow: "신한은행 × 몰리 · AI 라이브 데모",
+    // [LIVE-EDIT:banner] 데모 배너 — 에이전트가 방금 수정한 내용을 여기에 서술합니다.
+    bannerTitle: "AI 코딩 에이전트가 실시간으로 만드는 화면입니다",
+    bannerBody: "지금 보시는 UI는 시연 중 요청 즉시 수정됩니다. 문구·수치·기능 어떤 것이든 말씀해 주세요.",
+    // [LIVE-EDIT:stats] 홈 지표 스트립 — value/unit/label 자유 수정
+    stats: [
+      { value: "<90", unit: "초", label: "평균 분석 시간" },
+      { value: "96", unit: "%", label: "근거 매핑률" },
+      { value: "S·M·L", unit: "", label: "패키지 비교" }
+    ]
+  };
+
+  // [LIVE-EDIT:project] 분석 대상 사업 정보 — title/agency/budget 수정 시 전 화면 반영
   const project = {
     title: "도시철도 통합관제 플랫폼 고도화 및 AI 운영지원 시스템 구축",
     agency: "한국교통공단",
@@ -107,6 +129,8 @@ window.MOLI_DATA = (() => {
     { key: "qa", label: "QA", color: "#98a2b3" }
   ];
 
+  // [LIVE-EDIT:requirements] 새 요구사항 객체를 배열 끝에 추가하면
+  // 체크리스트·패키지 비교·총 공수가 자동으로 재계산됩니다.
   const requirements = [
     {
       id: "r1",
@@ -361,6 +385,7 @@ window.MOLI_DATA = (() => {
     ]
   };
 
+  // [LIVE-EDIT:email] 메일 초안 — 수신자·제목·본문 수정 시 메일 화면 즉시 반영
   const emailDraft = {
     subject: "[RFP 검토] 도시철도 통합관제 플랫폼 — Medium 패키지 · 42.5 MM",
     to: "review-lead@example.org",
@@ -384,7 +409,7 @@ Medium 패키지에 포함된 차별화 항목:
 몰리 공공제안 에이전트`
   };
 
-  return { project, requirements, packages, stages, recents, report, emailDraft, evidence, ROLES };
+  return { demo, project, requirements, packages, stages, recents, report, emailDraft, evidence, ROLES };
 })();
 
 // API helper — connects to real backend
