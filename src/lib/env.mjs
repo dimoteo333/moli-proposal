@@ -3,6 +3,9 @@ export function getRuntimeConfig(env = process.env) {
   const supabaseAnonKey = readString(env.SUPABASE_ANON_KEY);
   const supabaseServiceRoleKey = readString(env.SUPABASE_SERVICE_ROLE_KEY);
   const visionMcpServerUrl = readString(env.GLM_VISION_MCP_SERVER_URL);
+  // MOLI_ENABLE_LLM 이 기본 플래그, MOLI_ENABLE_GLM_ANALYSIS 는 하위호환 별칭
+  const llmFlag = readString(env.MOLI_ENABLE_LLM) || readString(env.MOLI_ENABLE_GLM_ANALYSIS);
+  const llmEnabled = readBoolean(llmFlag);
 
   return {
     app: {
@@ -11,6 +14,15 @@ export function getRuntimeConfig(env = process.env) {
       reportLanguage: readString(env.MOLI_REPORT_LANGUAGE, "ko"),
       shareDefaultDays: readNumber(env.MOLI_SHARE_DEFAULT_DAYS, 7)
     },
+    llm: {
+      enabled: llmEnabled,
+      provider: readString(env.MOLI_LLM_PROVIDER, "glm"),
+      apiKey: glmApiKey,
+      apiKeySet: Boolean(glmApiKey),
+      baseUrl: readString(env.GLM_BASE_URL, "https://open.bigmodel.cn/api/paas/v4"),
+      model: readString(env.GLM_MODEL, "glm-4.5"),
+      timeoutMs: readNumber(env.MOLI_LLM_TIMEOUT_MS, 20000)
+    },
     glm: {
       apiKey: glmApiKey,
       apiKeySet: Boolean(glmApiKey),
@@ -18,7 +30,7 @@ export function getRuntimeConfig(env = process.env) {
       baseUrl: readString(env.GLM_BASE_URL, "https://open.bigmodel.cn/api/paas/v4"),
       model: readString(env.GLM_MODEL, "glm-4.5"),
       visionModel: readString(env.GLM_VISION_MODEL, "glm-4.5v"),
-      enableAnalysis: readBoolean(env.MOLI_ENABLE_GLM_ANALYSIS),
+      enableAnalysis: llmEnabled,
       visionMcpEnabled: readBoolean(env.MOLI_ENABLE_GLM_VISION_MCP),
       visionMcpServerUrl
     },
@@ -43,6 +55,13 @@ export function publicRuntimeConfig(config = getRuntimeConfig()) {
       fixture: config.app.fixture,
       reportLanguage: config.app.reportLanguage,
       shareDefaultDays: config.app.shareDefaultDays
+    },
+    llm: {
+      enabled: config.llm.enabled,
+      ready: config.llm.enabled && config.llm.apiKeySet,
+      provider: config.llm.provider,
+      model: config.llm.model,
+      baseUrl: config.llm.baseUrl
     },
     glm: {
       apiKeySet: config.glm.apiKeySet,
